@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>神奈川県 観光振興 EBPMダッシュボード</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div>
+        <h1>神奈川県 観光振興 EBPMダッシュボード</h1>
+        <div class="subtitle">新かながわグランドデザイン実施計画（2024-2027）準拠</div>
+      </div>
+      <div class="header-badge">EBPM対応 データカタログ付</div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- Top-level KPI Summary -->
+    <section class="kpi-summary" id="kpi-summary">
+      <!-- Populated by JS -->
+    </section>
+
+    <!-- Perspective Selector -->
+    <section class="perspective-section">
+      <h2>分解の切り口を選択</h2>
+      <div class="perspective-tabs" id="perspective-tabs">
+        <button class="perspective-tab active" data-perspective="policy">
+          <span class="tab-icon">📋</span>施策・事業別
+        </button>
+        <button class="perspective-tab" data-perspective="region">
+          <span class="tab-icon">🗺</span>地域別
+        </button>
+        <button class="perspective-tab" data-perspective="resource">
+          <span class="tab-icon">🏔</span>観光資源タイプ別
+        </button>
+        <button class="perspective-tab" data-perspective="traveler">
+          <span class="tab-icon">👥</span>旅行者属性別
+        </button>
+        <button class="perspective-tab" data-perspective="datasources">
+          <span class="tab-icon">🗄</span>データソース一覧
+        </button>
+      </div>
+    </section>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb" id="breadcrumb">
+      <span class="breadcrumb-item current">観光振興</span>
+    </nav>
+
+    <!-- Main Chart Area -->
+    <div class="chart-area" id="chart-area">
+      <!-- Sunburst Chart -->
+      <div class="sunburst-container" id="sunburst-container">
+        <h3 id="chart-title">施策・事業別の因数分解</h3>
+        <div id="sunburst-chart"></div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div class="detail-panel" id="detail-panel">
+        <div class="detail-empty">
+          <div class="empty-icon">🔍</div>
+          <p>チャートの要素をクリックして<br>詳細データを表示</p>
+          <p style="margin-top: 8px; font-size: 0.75rem;">各要素に紐づくKPI目標値と<br>利用可能なデータソースを確認できます</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Source Catalog (hidden by default) -->
+    <div class="datasource-catalog" id="datasource-catalog" style="display:none;">
+      <h3>利用可能データソース一覧</h3>
+      <p style="font-size:0.8rem; color:var(--text-light); margin-bottom:16px;">
+        神奈川県の観光振興分析に活用可能な全データソース（公的統計・民間データ）のカタログです。
+      </p>
+      <div id="datasource-list"></div>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="sunburst-tooltip" id="tooltip"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>神奈川県 観光振興 EBPMダッシュボード | 新かながわグランドデザイン PJ5 観光・地域活性化</p>
+    <p style="margin-top:4px;">データソース: 神奈川県入込観光客調査、観光庁宿泊旅行統計調査、e-Stat、RESAS、各鉄道会社 他</p>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
