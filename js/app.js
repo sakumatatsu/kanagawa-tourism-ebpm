@@ -934,8 +934,23 @@
     let totalSources = 0;
     categories.forEach(cat => totalSources += cat.sources.length);
 
+    // Count sources with actual data values
+    let sourcesWithData = 0;
+    if (hasActualData() && ACTUAL_DATA.dataSourceValues) {
+      categories.forEach(cat => {
+        cat.sources.forEach(src => {
+          const dsv = ACTUAL_DATA.dataSourceValues[src.id];
+          if (dsv && dsv.latestValue && dsv.latestValue !== "---") sourcesWithData++;
+        });
+      });
+    }
+
+    let dataCountHtml = sourcesWithData > 0
+      ? ` | うち <strong>${sourcesWithData}</strong> 件にデータ値あり`
+      : "";
+
     let html = `<p style="font-size:0.8rem; color:var(--text-light); margin-bottom:16px;">
-      合計 <strong>${totalSources}</strong> データソース（${categories.length}カテゴリ）
+      合計 <strong>${totalSources}</strong> データソース（${categories.length}カテゴリ）${dataCountHtml}
     </p>`;
 
     categories.forEach((cat, catIdx) => {
@@ -964,10 +979,42 @@
           }
         }
 
+        // Data value badge from dataSourceValues
+        let dataValueHtml = "";
+        if (hasActualData() && ACTUAL_DATA.dataSourceValues) {
+          const dsv = ACTUAL_DATA.dataSourceValues[src.id];
+          if (dsv && dsv.latestValue && dsv.latestValue !== "---") {
+            const reliabilityClass = dsv.reliability === "high" ? "reliability-high"
+              : dsv.reliability === "medium" ? "reliability-medium"
+              : dsv.reliability === "low" ? "reliability-low"
+              : "reliability-meta";
+            const reliabilityLabel = dsv.reliability === "high" ? "公式"
+              : dsv.reliability === "medium" ? "近似"
+              : dsv.reliability === "low" ? "推定"
+              : "";
+            const yearStr = dsv.year ? `${dsv.year}年` : "";
+            dataValueHtml = `
+              <div class="ds-value-badge">
+                <span class="ds-value-number">${dsv.latestValue}<span class="ds-value-unit">${dsv.unit}</span></span>
+                <span class="ds-value-year">${yearStr}</span>
+                ${reliabilityLabel ? `<span class="ds-reliability ${reliabilityClass}">${reliabilityLabel}</span>` : ""}
+              </div>`;
+            if (dsv.detail) {
+              dataValueHtml += `<div class="ds-value-detail">${dsv.detail}</div>`;
+            }
+          } else if (dsv && dsv.latestValue === "---") {
+            dataValueHtml = `<div class="ds-value-meta">${dsv.detail || "メタデータのみ"}</div>`;
+          }
+        }
+
         html += `
           <div class="datasource-category-item">
             <span class="data-source-badge ${freeClass}">${freeLabel}</span>
-            <span style="flex:1;"><strong>${src.name}</strong> <span style="color:var(--text-light);">（${src.provider}）</span>${costHtml}</span>
+            <span style="flex:1;">
+              <strong>${src.name}</strong> <span style="color:var(--text-light);">（${src.provider}）</span>
+              ${costHtml}
+              ${dataValueHtml}
+            </span>
             ${freqBadge}
             ${apiBadge}
           </div>
