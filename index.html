@@ -54,18 +54,23 @@
 
     <!-- Main Chart Area -->
     <div class="chart-area" id="chart-area">
-      <!-- Sunburst Chart -->
+      <!-- Left: Sunburst Chart -->
       <div class="sunburst-container" id="sunburst-container">
         <h3 id="chart-title">施策・事業別の因数分解</h3>
         <div id="sunburst-chart"></div>
       </div>
 
-      <!-- Detail Panel -->
-      <div class="detail-panel" id="detail-panel">
-        <div class="detail-empty">
-          <div class="empty-icon">🔍</div>
-          <p>チャートの要素をクリックして<br>詳細データを表示</p>
-          <p style="margin-top: 8px; font-size: 0.75rem;">各要素に紐づくKPI目標値と<br>利用可能なデータソースを確認できます</p>
+      <!-- Right: Detail Panel + Data Source Values (stacked) -->
+      <div class="right-panel-stack">
+        <div class="detail-panel" id="detail-panel">
+          <div class="detail-empty">
+            <div class="empty-icon">🔍</div>
+            <p>チャートの要素をクリックして<br>詳細データを表示</p>
+            <p style="margin-top: 8px; font-size: 0.75rem;">各要素に紐づくKPI目標値と<br>利用可能なデータソースを確認できます</p>
+          </div>
+        </div>
+        <div class="datasource-values-panel" id="datasource-values-panel">
+          <!-- Populated by JS: contextual data source outcome values -->
         </div>
       </div>
     </div>

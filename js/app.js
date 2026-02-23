@@ -10,6 +10,16 @@
   let currentPath = [];
   let sunburstSvg = null;
 
+  // Build name→id lookup for cross-referencing node dataSources with dataSourceValues
+  const dataSourceNameToId = {};
+  if (DATA.allDataSources && DATA.allDataSources.categories) {
+    DATA.allDataSources.categories.forEach(cat => {
+      cat.sources.forEach(src => {
+        dataSourceNameToId[src.name] = src.id;
+      });
+    });
+  }
+
   // Color scales for each perspective
   const colorScales = {
     policy: d3.scaleOrdinal([
@@ -63,6 +73,7 @@
     setupPerspectiveTabs();
     renderSunburst();
     renderDataSourceCatalog();
+    renderDataSourceValues(null, null);
 
     // Add data freshness indicator
     if (hasActualData() && ACTUAL_DATA.lastUpdated) {
@@ -455,6 +466,17 @@
 
     // Render detail panel
     renderDetailPanel(nodeData, d.data.name);
+
+    // Update data source values panel with context
+    const contextSources = getContextDataSources(d);
+    const perspectiveLabels = {
+      policy: "\u65BD\u7B56\u30FB\u4E8B\u696D",
+      region: "\u5730\u57DF",
+      resource: "\u89B3\u5149\u8CC7\u6E90",
+      traveler: "\u65C5\u884C\u8005\u5C5E\u6027"
+    };
+    const ctxLabel = d.data.name + "\uFF08" + (perspectiveLabels[currentPerspective] || "") + "\uFF09";
+    renderDataSourceValues(contextSources, ctxLabel);
 
     // Highlight related KPI cards
     highlightRelatedKPIs(d);
@@ -914,6 +936,164 @@
     return html;
   }
 
+  // === Data Source Values Panel (contextual outcome data) ===
+  function renderDataSourceValues(contextSources, contextLabel) {
+    const panel = document.getElementById("datasource-values-panel");
+    if (!panel) return;
+
+    if (!hasActualData() || !ACTUAL_DATA.dataSourceValues) {
+      panel.innerHTML = "";
+      return;
+    }
+
+    // Resolve context data sources (name-based) to dataSourceValues (id-based)
+    let resolvedItems = [];
+
+    if (contextSources && contextSources.length > 0) {
+      contextSources.forEach(function(src) {
+        const srcName = src.name || src;
+        const srcId = dataSourceNameToId[srcName];
+        if (srcId && ACTUAL_DATA.dataSourceValues[srcId]) {
+          const dsv = ACTUAL_DATA.dataSourceValues[srcId];
+          resolvedItems.push({
+            id: srcId,
+            name: srcName,
+            provider: src.provider || "",
+            label: dsv.label,
+            latestValue: dsv.latestValue,
+            unit: dsv.unit,
+            year: dsv.year,
+            detail: dsv.detail,
+            reliability: dsv.reliability
+          });
+        }
+      });
+    }
+
+    // Fallback: show highlight items if no context or no resolved items
+    if (resolvedItems.length === 0) {
+      resolvedItems = getHighlightDataSourceValues();
+    }
+
+    // Separate items with actual values vs metadata-only
+    const withValues = resolvedItems.filter(function(item) {
+      return item.latestValue && item.latestValue !== "---";
+    });
+    const metaOnly = resolvedItems.filter(function(item) {
+      return !item.latestValue || item.latestValue === "---";
+    });
+
+    // Build HTML
+    let html = '<h4>\uD83D\uDCC8 \u30C7\u30FC\u30BF\u30BD\u30FC\u30B9\u5B9F\u7E3E\u5024</h4>';
+
+    if (contextLabel) {
+      html += '<div class="dsv-subtitle">\u300C' + contextLabel + '\u300D\u306B\u95A2\u9023\u3059\u308B\u30C7\u30FC\u30BF\u30BD\u30FC\u30B9\u306E\u6700\u65B0\u5024</div>';
+    } else {
+      html += '<div class="dsv-subtitle">\u4E3B\u8981\u30C7\u30FC\u30BF\u30BD\u30FC\u30B9\u306E\u6700\u65B0\u5B9F\u7E3E\u5024\uFF08' + withValues.length + '\u4EF6\uFF09</div>';
+    }
+
+    if (withValues.length === 0 && metaOnly.length === 0) {
+      html += '<div class="dsv-empty-state">' +
+        '<div class="dsv-empty-icon">\uD83D\uDCCA</div>' +
+        '<p>\u95A2\u9023\u3059\u308B\u30C7\u30FC\u30BF\u30BD\u30FC\u30B9\u306E\u5B9F\u7E3E\u5024\u306F\u3042\u308A\u307E\u305B\u3093</p>' +
+        '</div>';
+    } else {
+      withValues.forEach(function(item) {
+        html += buildDsvCard(item);
+      });
+      if (metaOnly.length > 0) {
+        html += '<div class="dsv-meta-count">\u4ED6 ' + metaOnly.length + ' \u4EF6\u306F\u30E1\u30BF\u30C7\u30FC\u30BF\u306E\u307F</div>';
+      }
+    }
+
+    panel.innerHTML = html;
+  }
+
+  function buildDsvCard(item) {
+    var reliabilityClass = item.reliability === "high" ? "dsv-card--high"
+      : item.reliability === "medium" ? "dsv-card--medium"
+      : item.reliability === "low" ? "dsv-card--low"
+      : "dsv-card--meta";
+
+    var reliabilityLabel = item.reliability === "high" ? "\u516C\u5F0F"
+      : item.reliability === "medium" ? "\u8FD1\u4F3C"
+      : item.reliability === "low" ? "\u63A8\u5B9A"
+      : "";
+
+    var yearStr = item.year ? item.year + "\u5E74" : "";
+
+    var html = '<div class="dsv-card ' + reliabilityClass + '">';
+    html += '<div style="flex:1; min-width:0;">';
+    html += '<div class="dsv-card-label">' + (item.label || item.name) + '</div>';
+    html += '<div class="dsv-card-value">' + item.latestValue +
+      '<span class="dsv-card-unit">' + item.unit + '</span></div>';
+    html += '<div class="dsv-card-meta">';
+    if (yearStr) html += yearStr;
+    if (reliabilityLabel) {
+      var relClass = item.reliability === "high" ? "reliability-high"
+        : item.reliability === "medium" ? "reliability-medium"
+        : item.reliability === "low" ? "reliability-low" : "reliability-meta";
+      html += ' <span class="ds-reliability ' + relClass + '">' + reliabilityLabel + '</span>';
+    }
+    html += '</div>';
+    if (item.detail) {
+      html += '<div class="dsv-card-meta">' + item.detail + '</div>';
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  function getHighlightDataSourceValues() {
+    var highlights = [];
+    var dsv = ACTUAL_DATA.dataSourceValues;
+    var priorityOrder = ["high", "medium", "low"];
+
+    Object.keys(dsv).forEach(function(id) {
+      var item = dsv[id];
+      if (item.latestValue && item.latestValue !== "---" && item.reliability !== "meta") {
+        var name = item.label || id;
+        var provider = "";
+        DATA.allDataSources.categories.forEach(function(cat) {
+          cat.sources.forEach(function(src) {
+            if (src.id === id) {
+              name = src.name;
+              provider = src.provider;
+            }
+          });
+        });
+        highlights.push({
+          id: id, name: name, provider: provider,
+          label: item.label, latestValue: item.latestValue,
+          unit: item.unit, year: item.year,
+          detail: item.detail, reliability: item.reliability
+        });
+      }
+    });
+
+    highlights.sort(function(a, b) {
+      var pa = priorityOrder.indexOf(a.reliability);
+      var pb = priorityOrder.indexOf(b.reliability);
+      if (pa === -1) pa = 99;
+      if (pb === -1) pb = 99;
+      if (pa !== pb) return pa - pb;
+      return (b.year || 0) - (a.year || 0);
+    });
+
+    return highlights.slice(0, 8);
+  }
+
+  function getContextDataSources(d) {
+    var node = d;
+    while (node) {
+      var nodeData = node.data ? (node.data.data || {}) : {};
+      if (nodeData.dataSources && nodeData.dataSources.length > 0) {
+        return nodeData.dataSources;
+      }
+      node = node.parent;
+    }
+    return [];
+  }
+
   function resetDetailPanel() {
     const panel = document.getElementById("detail-panel");
     panel.innerHTML = `
@@ -924,6 +1104,7 @@
       </div>
     `;
     clearKPIHighlights();
+    renderDataSourceValues(null, null);
   }
 
   // === Data Source Catalog ===
