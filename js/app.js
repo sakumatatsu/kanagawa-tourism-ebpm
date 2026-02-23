@@ -31,12 +31,46 @@
     ])
   };
 
+  // === Check if ACTUAL_DATA is available ===
+  function hasActualData() {
+    return typeof ACTUAL_DATA !== "undefined" && ACTUAL_DATA !== null;
+  }
+
   // === Initialize ===
   function init() {
+    // Update KPI latest values from ACTUAL_DATA if available
+    if (hasActualData() && ACTUAL_DATA.topKPIs) {
+      DATA.topLevel.kpis.forEach(kpi => {
+        const tsKey = kpi.timeSeriesKey || kpi.name;
+        const tsData = ACTUAL_DATA.topKPIs[tsKey];
+        if (tsData && tsData.series) {
+          // Find the latest non-null value
+          for (let i = tsData.series.length - 1; i >= 0; i--) {
+            if (tsData.series[i].value !== null) {
+              kpi.latest = {
+                value: tsData.series[i].value,
+                year: tsData.series[i].year,
+                unit: kpi.baseline.unit
+              };
+              break;
+            }
+          }
+        }
+      });
+    }
+
     renderKPISummary(currentPerspective);
     setupPerspectiveTabs();
     renderSunburst();
     renderDataSourceCatalog();
+
+    // Add data freshness indicator
+    if (hasActualData() && ACTUAL_DATA.lastUpdated) {
+      const badge = document.querySelector(".header-badge");
+      if (badge) {
+        badge.innerHTML = `<span class="data-freshness"><span class="freshness-dot"></span>データ更新: ${ACTUAL_DATA.lastUpdated}</span>`;
+      }
+    }
   }
 
   // === KPI Summary Cards ===
@@ -86,8 +120,21 @@
         perspectiveLabelHtml = `<div class="kpi-perspective-label dimmed">この切り口では分解不可</div>`;
       }
 
+      // Trend chart toggle (only if ACTUAL_DATA is available)
+      let trendToggleHtml = "";
+      let trendContainerHtml = "";
+      if (hasActualData()) {
+        const tsKey = kpi.timeSeriesKey || kpi.name;
+        const tsData = ACTUAL_DATA.topKPIs ? ACTUAL_DATA.topKPIs[tsKey] : null;
+        if (tsData && tsData.series) {
+          trendToggleHtml = `<button class="trend-toggle-btn" onclick="toggleTrendChart(${idx})" title="経年推移を表示">▼</button>`;
+          trendContainerHtml = `<div class="trend-chart-container" id="trend-chart-${idx}"></div>`;
+        }
+      }
+
       return `
         <div class="kpi-card fade-in${dimmedClass}" data-kpi-name="${kpi.name}" data-kpi-idx="${idx}">
+          ${trendToggleHtml}
           <div class="kpi-label">${kpi.name}</div>
           <div class="kpi-value">${displayValue}<span class="kpi-unit"> ${unit}</span></div>
           <div class="kpi-label" style="margin-top:2px;">${displayYear}年度実績</div>
@@ -96,6 +143,7 @@
           ${breakdownHtml}
           ${perspectiveLabelHtml}
           <div class="kpi-contribution-badge" style="display:none;"></div>
+          ${trendContainerHtml}
         </div>
       `;
     }).join("");
@@ -506,6 +554,136 @@
     });
   }
 
+  // === Trend Chart (D3.js bar chart with target line) ===
+  function renderTrendChart(containerId, seriesData, options) {
+    if (!seriesData || !seriesData.series || seriesData.series.length === 0) return;
+
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = "";
+
+    const margin = { top: 16, right: 12, bottom: 28, left: 48 };
+    const width = options.width || 280;
+    const height = options.height || 160;
+    const innerW = width - margin.left - margin.right;
+    const innerH = height - margin.top - margin.bottom;
+
+    const series = seriesData.series;
+    const unit = seriesData.unit || options.unit || "";
+    const targetValue = options.targetValue || null;
+
+    const svg = d3.select(container)
+      .append("svg")
+      .attr("viewBox", `0 0 ${width} ${height}`)
+      .attr("preserveAspectRatio", "xMidYMid meet");
+
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Scales
+    const xScale = d3.scaleBand()
+      .domain(series.map(d => d.year))
+      .range([0, innerW])
+      .padding(0.3);
+
+    const maxVal = d3.max(series, d => d.value || 0);
+    const yMax = Math.max(maxVal * 1.15, targetValue ? targetValue * 1.1 : 0);
+    const yScale = d3.scaleLinear()
+      .domain([0, yMax])
+      .range([innerH, 0]);
+
+    // X axis
+    g.append("g")
+      .attr("transform", `translate(0,${innerH})`)
+      .call(d3.axisBottom(xScale).tickFormat(d => `${d}`))
+      .selectAll("text")
+      .attr("font-size", "0.55rem")
+      .attr("fill", "#7f8c8d");
+
+    // Y axis
+    g.append("g")
+      .call(d3.axisLeft(yScale).ticks(4).tickFormat(d => {
+        if (d >= 10000) return (d / 10000).toFixed(1) + "万";
+        return d.toLocaleString();
+      }))
+      .selectAll("text")
+      .attr("font-size", "0.55rem")
+      .attr("fill", "#7f8c8d");
+
+    // Grid lines
+    g.selectAll(".grid-line")
+      .data(yScale.ticks(4))
+      .join("line")
+      .attr("class", "grid-line")
+      .attr("x1", 0)
+      .attr("x2", innerW)
+      .attr("y1", d => yScale(d))
+      .attr("y2", d => yScale(d))
+      .attr("stroke", "#ecf0f1")
+      .attr("stroke-dasharray", "2,2");
+
+    // Bars
+    g.selectAll(".trend-bar")
+      .data(series)
+      .join("rect")
+      .attr("class", "trend-bar")
+      .attr("x", d => xScale(d.year))
+      .attr("y", d => d.value !== null ? yScale(d.value) : innerH)
+      .attr("width", xScale.bandwidth())
+      .attr("height", d => d.value !== null ? innerH - yScale(d.value) : 0)
+      .attr("rx", 2)
+      .attr("fill", d => {
+        if (d.value === null) return "transparent";
+        if (d.year === 2020 || d.year === 2021) return "rgba(41, 128, 185, 0.35)";
+        return "var(--primary-light)";
+      });
+
+    // Value labels on bars
+    g.selectAll(".bar-label")
+      .data(series)
+      .join("text")
+      .attr("class", "bar-label")
+      .attr("x", d => xScale(d.year) + xScale.bandwidth() / 2)
+      .attr("y", d => d.value !== null ? yScale(d.value) - 4 : innerH - 4)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "0.5rem")
+      .attr("fill", d => d.value !== null ? "var(--text)" : "var(--text-light)")
+      .text(d => {
+        if (d.value === null) return "未公表";
+        if (d.value >= 10000) return (d.value / 10000).toFixed(1) + "万";
+        return d.value.toLocaleString();
+      });
+
+    // Target line
+    if (targetValue) {
+      g.append("line")
+        .attr("x1", 0)
+        .attr("x2", innerW)
+        .attr("y1", yScale(targetValue))
+        .attr("y2", yScale(targetValue))
+        .attr("stroke", "var(--accent)")
+        .attr("stroke-width", 1.5)
+        .attr("stroke-dasharray", "6,3");
+
+      g.append("text")
+        .attr("x", innerW)
+        .attr("y", yScale(targetValue) - 4)
+        .attr("text-anchor", "end")
+        .attr("font-size", "0.5rem")
+        .attr("fill", "var(--accent)")
+        .attr("font-weight", "600")
+        .text(`目標: ${targetValue.toLocaleString()}${unit}`);
+    }
+
+    // Unit label
+    svg.append("text")
+      .attr("x", 4)
+      .attr("y", 10)
+      .attr("font-size", "0.5rem")
+      .attr("fill", "var(--text-light)")
+      .text(`(${unit})`);
+  }
+
   // === Breadcrumb ===
   function updateBreadcrumb() {
     const container = document.getElementById("breadcrumb");
@@ -575,6 +753,24 @@
 
     panel.innerHTML = html;
     panel.scrollTop = 0;
+
+    // Render trend charts in detail panel after DOM is ready
+    if (hasActualData() && ACTUAL_DATA.subKPIs && nodeData.kpis) {
+      setTimeout(() => {
+        nodeData.kpis.forEach(kpi => {
+          const subData = ACTUAL_DATA.subKPIs[kpi.name];
+          if (subData) {
+            const chartId = `detail-trend-${kpi.name.replace(/[^a-zA-Z0-9]/g, "")}`;
+            renderTrendChart(chartId, subData, {
+              width: 340,
+              height: 150,
+              unit: subData.unit || "",
+              targetValue: kpi.target ? kpi.target.value : null
+            });
+          }
+        });
+      }, 50);
+    }
   }
 
   function renderRegionDetail(nodeData) {
@@ -640,6 +836,13 @@
       targetsHtml += `</div>`;
     }
 
+    // Trend chart in detail panel
+    let trendHtml = "";
+    if (hasActualData() && ACTUAL_DATA.subKPIs && ACTUAL_DATA.subKPIs[kpi.name]) {
+      const chartId = `detail-trend-${kpi.name.replace(/[^a-zA-Z0-9]/g, "")}`;
+      trendHtml = `<div class="detail-trend-chart" id="${chartId}"></div>`;
+    }
+
     return `
       <div class="kpi-detail">
         <div class="kpi-detail-name">${kpi.name}</div>
@@ -654,6 +857,7 @@
           <span>目標: ${target.toLocaleString()} (${kpi.target.year})</span>
         </div>
         ${targetsHtml}
+        ${trendHtml}
       </div>
     `;
   }
@@ -677,6 +881,19 @@
         linkHtml = `<a href="${src.url}" target="_blank" rel="noopener" class="data-source-link">[リンク]</a>`;
       }
 
+      // Cost badge for paid sources
+      let costHtml = "";
+      if (src.type === "private" && hasActualData() && ACTUAL_DATA.paidDataCosts) {
+        const costInfo = ACTUAL_DATA.paidDataCosts[src.costId || src.id || ""];
+        if (costInfo) {
+          costHtml = `<br><span class="cost-badge"><span class="cost-icon">💰</span> ${costInfo.estimatedCost}`;
+          if (costInfo.note) {
+            costHtml += `<span class="cost-note">（${costInfo.note}）</span>`;
+          }
+          costHtml += `</span>`;
+        }
+      }
+
       html += `
         <div class="data-source-item">
           <span class="data-source-badge ${src.type}">${typeLabel}</span>
@@ -687,6 +904,7 @@
             ${linkHtml}
             ${src.note ? `<br><span class="data-source-note">${src.note}</span>` : ""}
             ${src.estatId ? `<br><span style="font-size:0.6rem; color:var(--text-light);">e-Stat ID: ${src.estatId}</span>` : ""}
+            ${costHtml}
           </div>
         </div>
       `;
@@ -737,10 +955,19 @@
         const freeLabel = src.free ? "無料" : "有料";
         const freeClass = src.free ? "public" : "private";
 
+        // Cost info for paid sources in catalog
+        let costHtml = "";
+        if (!src.free && hasActualData() && ACTUAL_DATA.paidDataCosts) {
+          const costInfo = ACTUAL_DATA.paidDataCosts[src.costId || src.id || ""];
+          if (costInfo) {
+            costHtml = `<br><span class="cost-badge" style="margin-top:2px;"><span class="cost-icon">💰</span> ${costInfo.estimatedCost}</span>`;
+          }
+        }
+
         html += `
           <div class="datasource-category-item">
             <span class="data-source-badge ${freeClass}">${freeLabel}</span>
-            <span style="flex:1;"><strong>${src.name}</strong> <span style="color:var(--text-light);">（${src.provider}）</span></span>
+            <span style="flex:1;"><strong>${src.name}</strong> <span style="color:var(--text-light);">（${src.provider}）</span>${costHtml}</span>
             ${freqBadge}
             ${apiBadge}
           </div>
@@ -764,6 +991,36 @@
   window.toggleCategory = function (idx) {
     const el = document.getElementById(`cat-${idx}`);
     el.classList.toggle("open");
+  };
+
+  window.toggleTrendChart = function (kpiIdx) {
+    const container = document.getElementById(`trend-chart-${kpiIdx}`);
+    if (!container) return;
+
+    const btn = container.parentElement.querySelector(".trend-toggle-btn");
+
+    if (container.classList.contains("open")) {
+      container.classList.remove("open");
+      if (btn) btn.textContent = "▼";
+    } else {
+      container.classList.add("open");
+      if (btn) btn.textContent = "▲";
+
+      // Render chart if not yet rendered
+      if (!container.querySelector("svg")) {
+        const kpi = DATA.topLevel.kpis[kpiIdx];
+        const tsKey = kpi.timeSeriesKey || kpi.name;
+        const tsData = ACTUAL_DATA.topKPIs[tsKey];
+        if (tsData) {
+          renderTrendChart(`trend-chart-${kpiIdx}`, tsData, {
+            width: 300,
+            height: 170,
+            unit: tsData.unit || kpi.baseline.unit,
+            targetValue: kpi.target && kpi.target.value ? kpi.target.value : null
+          });
+        }
+      }
+    }
   };
 
   // === Start ===

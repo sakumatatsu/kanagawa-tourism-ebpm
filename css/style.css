@@ -828,3 +828,123 @@ body {
 .detail-panel::-webkit-scrollbar-thumb:hover {
   background: var(--text-light);
 }
+
+/* === Trend Chart === */
+.trend-toggle-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  transition: all var(--transition);
+}
+
+.trend-toggle-btn:hover {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+  background: rgba(41, 128, 185, 0.05);
+}
+
+.kpi-card {
+  position: relative;
+}
+
+.trend-chart-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, margin-top 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.trend-chart-container.open {
+  max-height: 250px;
+  margin-top: 12px;
+  opacity: 1;
+}
+
+.trend-chart-container svg {
+  width: 100%;
+  height: auto;
+}
+
+.trend-chart-title {
+  font-size: 0.65rem;
+  color: var(--text-light);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+/* Cost badge for paid data sources */
+.cost-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: rgba(230, 126, 34, 0.1);
+  border: 1px solid rgba(230, 126, 34, 0.3);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+.cost-badge .cost-icon {
+  font-size: 0.7rem;
+}
+
+.cost-badge .cost-note {
+  font-weight: 400;
+  font-size: 0.6rem;
+  color: var(--text-light);
+  margin-left: 4px;
+}
+
+/* Data freshness indicator */
+.data-freshness {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--text-light);
+  background: rgba(255,255,255,0.1);
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.data-freshness .freshness-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+/* Detail panel trend chart */
+.detail-trend-chart {
+  margin: 12px 0;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: var(--radius);
+}
+
+.detail-trend-chart svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Responsive adjustments for trend charts */
+@media (max-width: 768px) {
+  .trend-chart-container.open {
+    max-height: 220px;
+  }
+}

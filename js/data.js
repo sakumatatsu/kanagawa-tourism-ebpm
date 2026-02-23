@@ -11,6 +11,7 @@ const KANAGAWA_TOURISM_DATA = {
     kpis: [
       {
         name: "観光消費額総額",
+        timeSeriesKey: "観光消費額総額",
         baseline: { value: 10278, year: 2022, unit: "億円" },
         target: { value: 11896, year: 2027, unit: "億円" },
         latest: { value: null, year: 2024, unit: "億円" },
@@ -18,6 +19,7 @@ const KANAGAWA_TOURISM_DATA = {
       },
       {
         name: "延べ入込観光客数",
+        timeSeriesKey: "延べ入込観光客数",
         baseline: { value: 19109, year: 2022, unit: "万人" },
         target: { value: null, year: 2027, unit: "万人" },
         latest: { value: 20806, year: 2024, unit: "万人" },
@@ -26,6 +28,7 @@ const KANAGAWA_TOURISM_DATA = {
       },
       {
         name: "延べ宿泊者数",
+        timeSeriesKey: "延べ宿泊者数",
         baseline: { value: 2209, year: 2022, unit: "万人泊" },
         target: { value: 2530, year: 2027, unit: "万人泊" },
         latest: { value: null, year: 2024, unit: "万人泊" },
@@ -33,6 +36,7 @@ const KANAGAWA_TOURISM_DATA = {
       },
       {
         name: "観光客満足度",
+        timeSeriesKey: "観光客満足度",
         baseline: { value: 77.6, year: 2022, unit: "%" },
         target: { value: 80, year: 2027, unit: "%" },
         latest: { value: null, year: 2024, unit: "%" },
@@ -660,12 +664,12 @@ const KANAGAWA_TOURISM_DATA = {
         name: "人流データ（有料）",
         icon: "📍",
         sources: [
-          { id: "mobaku", name: "モバイル空間統計", provider: "ドコモ・インサイトマーケティング", frequency: "月次", apiAvailable: true, free: false },
-          { id: "agoop", name: "Agoop人流データ", provider: "Agoop", frequency: "日次〜月次", apiAvailable: true, free: false },
-          { id: "zenrin", name: "ゼンリン混雑統計", provider: "ゼンリンデータコム", frequency: "月次", apiAvailable: false, free: false },
-          { id: "unerry", name: "unerry Beacon Bank", provider: "unerry", frequency: "日次〜月次", apiAvailable: false, free: false },
-          { id: "locmind", name: "LocationMind xPop", provider: "LocationMind", frequency: "月次", apiAvailable: false, free: false },
-          { id: "navitime", name: "NAVITIME観光データ", provider: "ナビタイムジャパン", frequency: "月次", apiAvailable: true, free: false }
+          { id: "mobaku", name: "モバイル空間統計", provider: "ドコモ・インサイトマーケティング", frequency: "月次", apiAvailable: true, free: false, costId: "mobaku" },
+          { id: "agoop", name: "Agoop人流データ", provider: "Agoop", frequency: "日次〜月次", apiAvailable: true, free: false, costId: "agoop" },
+          { id: "zenrin", name: "ゼンリン混雑統計", provider: "ゼンリンデータコム", frequency: "月次", apiAvailable: false, free: false, costId: "zenrin" },
+          { id: "unerry", name: "unerry Beacon Bank", provider: "unerry", frequency: "日次〜月次", apiAvailable: false, free: false, costId: "unerry" },
+          { id: "locmind", name: "LocationMind xPop", provider: "LocationMind", frequency: "月次", apiAvailable: false, free: false, costId: "locmind" },
+          { id: "navitime", name: "NAVITIME観光データ", provider: "ナビタイムジャパン", frequency: "月次", apiAvailable: true, free: false, costId: "navitime" }
         ]
       },
       {
@@ -673,8 +677,8 @@ const KANAGAWA_TOURISM_DATA = {
         icon: "💳",
         sources: [
           { id: "jcb", name: "JCB消費NOW", provider: "JCB/ナウキャスト", frequency: "月次", apiAvailable: false, free: true, note: "基本指数のみ" },
-          { id: "custella", name: "三井住友 Custella", provider: "三井住友カード", frequency: "月次", apiAvailable: true, free: false },
-          { id: "visa", name: "Visa消費動向データ", provider: "Visa", frequency: "四半期", apiAvailable: false, free: false }
+          { id: "custella", name: "三井住友 Custella", provider: "三井住友カード", frequency: "月次", apiAvailable: true, free: false, costId: "custella" },
+          { id: "visa", name: "Visa消費動向データ", provider: "Visa", frequency: "四半期", apiAvailable: false, free: false, costId: "visa" }
         ]
       },
       {
@@ -692,8 +696,8 @@ const KANAGAWA_TOURISM_DATA = {
         icon: "📱",
         sources: [
           { id: "google-trends", name: "Google Trends", provider: "Google", frequency: "リアルタイム", apiAvailable: false, free: true },
-          { id: "tripadvisor", name: "TripAdvisor", provider: "Tripadvisor", frequency: "リアルタイム", apiAvailable: true, free: false },
-          { id: "google-maps", name: "Google Maps レビュー", provider: "Google", frequency: "リアルタイム", apiAvailable: true, free: false, note: "月$200無料クレジット" }
+          { id: "tripadvisor", name: "TripAdvisor", provider: "Tripadvisor", frequency: "リアルタイム", apiAvailable: true, free: false, costId: "tripadvisor" },
+          { id: "google-maps", name: "Google Maps レビュー", provider: "Google", frequency: "リアルタイム", apiAvailable: true, free: false, costId: "google-maps", note: "月$200無料クレジット" }
         ]
       },
       {
