@@ -598,16 +598,20 @@ const KANAGAWA_TOURISM_DATA = {
   },
 
   // === 切り口E: ユースケースプロセス別 ===
+  // 構成比の根拠: 観光庁「旅行・観光消費動向調査」2024年確報の国内宿泊旅行・費目別消費額構成比を基に按分
+  // 出典URL: https://www.mlit.go.jp/kankocho/topics02_00014.html
+  // 集客=交通費(26.6%)+参加費の一部→30%, 滞在=宿泊費(30.5%)→30%, 回遊=娯楽等サービス費(5.9%)+参加費の一部→10%, 消費=飲食費(14.7%)+買物代(8.6%)+その他→30%
+  // ※回遊フェーズは消費額では過小評価されるが、滞在時間・満足度・再訪意向への寄与が大きい。消費額ベースの按分値に注記を付記。
   byUseCase: {
     id: "usecase",
     label: "ユースケースプロセス別",
-    description: "観光客のジャーニー（集客→滞在→回遊→消費）に基づくプロセス分解",
+    description: "観光客のジャーニー（集客→滞在→回遊→消費）に基づくプロセス分解。構成比は観光庁「旅行・観光消費動向調査」2024年確報の費目別消費額を基に按分。",
     children: [
       {
         id: "attraction",
         label: "集客（認知・来訪誘引）",
         value: 30,
-        description: "観光客がどのように神奈川を認知し、訪問を決定するか",
+        description: "交通費・参加費ベース: 全消費額の約30%（観光庁2024年確報）。観光客がどのように神奈川を認知し、訪問を決定するか",
         children: [
           {
             id: "awareness",
@@ -670,13 +674,13 @@ const KANAGAWA_TOURISM_DATA = {
       {
         id: "stay",
         label: "滞在（宿泊体験）",
-        value: 25,
-        description: "宿泊施設での体験、滞在中の満足度向上",
+        value: 30,
+        description: "宿泊費ベース: 全消費額の約30%（観光庁2024年確報）。宿泊施設での体験、滞在中の満足度向上",
         children: [
           {
             id: "accommodation",
             label: "宿泊施設",
-            value: 12,
+            value: 15,
             description: "ホテル・旅館・民泊等の宿泊サービス提供",
             kpis: [
               {
@@ -697,7 +701,7 @@ const KANAGAWA_TOURISM_DATA = {
           {
             id: "checkin-experience",
             label: "チェックイン体験",
-            value: 5,
+            value: 6,
             description: "多言語対応、DX化（セルフチェックイン等）、受入環境",
             kpis: [
               {
@@ -715,7 +719,7 @@ const KANAGAWA_TOURISM_DATA = {
           {
             id: "instay-experience",
             label: "滞在中の体験",
-            value: 8,
+            value: 9,
             description: "温泉・アクティビティ・食事など滞在中の体験価値向上",
             kpis: [
               {
@@ -736,13 +740,13 @@ const KANAGAWA_TOURISM_DATA = {
       {
         id: "circulation",
         label: "回遊（域内周遊）",
-        value: 20,
-        description: "エリア内での移動・複数スポット巡り・体験活動",
+        value: 10,
+        description: "娯楽等サービス費ベース: 全消費額の約10%（観光庁2024年確報）。※消費額では過小評価だが、滞在時間延伸・満足度・再訪意向への寄与が大きいプロセス",
         children: [
           {
             id: "intra-transport",
             label: "域内交通",
-            value: 7,
+            value: 3,
             description: "ローカルバス・レンタサイクル・徒歩ルート・二次交通",
             kpis: [],
             dataSources: [
@@ -756,7 +760,7 @@ const KANAGAWA_TOURISM_DATA = {
           {
             id: "spot-hopping",
             label: "観光スポット巡り",
-            value: 8,
+            value: 4,
             description: "寺社仏閣・自然景勝地・美術館等の複数スポット訪問",
             kpis: [
               {
@@ -776,7 +780,7 @@ const KANAGAWA_TOURISM_DATA = {
           {
             id: "events-experiences",
             label: "イベント・体験",
-            value: 5,
+            value: 3,
             description: "祭り・ワークショップ・季節イベントへの参加",
             kpis: [
               {
@@ -795,13 +799,13 @@ const KANAGAWA_TOURISM_DATA = {
       {
         id: "spending",
         label: "消費（観光消費）",
-        value: 25,
-        description: "飲食・買い物・レジャー・デジタル決済など消費行動",
+        value: 30,
+        description: "飲食費・買物代・その他ベース: 全消費額の約30%（観光庁2024年確報）。飲食・買い物・レジャー・デジタル決済など消費行動",
         children: [
           {
             id: "food-beverage",
             label: "飲食",
-            value: 8,
+            value: 10,
             description: "レストラン・地元グルメ（中華街、三崎マグロ、湘南しらす等）",
             kpis: [
               {
@@ -820,7 +824,7 @@ const KANAGAWA_TOURISM_DATA = {
           {
             id: "shopping-souvenirs",
             label: "物販・お土産",
-            value: 7,
+            value: 9,
             description: "地場産品・伝統工芸品（箱根寄木細工等）・お土産品",
             kpis: [
               {
@@ -839,7 +843,7 @@ const KANAGAWA_TOURISM_DATA = {
           {
             id: "leisure-entertainment",
             label: "レジャー・エンタメ",
-            value: 6,
+            value: 7,
             description: "テーマパーク・水族館・スポーツ・アクティビティへの支出",
             kpis: [],
             dataSources: [
