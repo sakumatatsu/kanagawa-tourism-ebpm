@@ -38,6 +38,10 @@
     traveler: d3.scaleOrdinal([
       "#2980b9", "#27ae60", "#e67e22", "#8e44ad",
       "#e74c3c", "#1abc9c"
+    ]),
+    usecase: d3.scaleOrdinal([
+      "#3498db", "#2ecc71", "#e67e22", "#e74c3c",
+      "#9b59b6", "#1abc9c", "#f39c12", "#34495e"
     ])
   };
 
@@ -239,6 +243,7 @@
       case "region": return DATA.byRegion;
       case "resource": return DATA.byResourceType;
       case "traveler": return DATA.byTravelerType;
+      case "usecase": return DATA.byUseCase;
       default: return null;
     }
   }
@@ -278,6 +283,7 @@
       case "region": return DATA.byRegion;
       case "resource": return DATA.byResourceType;
       case "traveler": return DATA.byTravelerType;
+      case "usecase": return DATA.byUseCase;
       default: return DATA.byPolicy;
     }
   }
@@ -315,7 +321,8 @@
       policy: "施策・事業別の因数分解",
       region: "地域別の因数分解（入込観光客数: 万人）",
       resource: "観光資源タイプ別の因数分解",
-      traveler: "旅行者属性別の因数分解"
+      traveler: "旅行者属性別の因数分解",
+      usecase: "ユースケースプロセス別の因数分解（集客→滞在→回遊→消費）"
     };
     document.getElementById("chart-title").textContent = titles[currentPerspective] || "";
 
@@ -473,7 +480,8 @@
       policy: "\u65BD\u7B56\u30FB\u4E8B\u696D",
       region: "\u5730\u57DF",
       resource: "\u89B3\u5149\u8CC7\u6E90",
-      traveler: "\u65C5\u884C\u8005\u5C5E\u6027"
+      traveler: "\u65C5\u884C\u8005\u5C5E\u6027",
+      usecase: "\u30D7\u30ED\u30BB\u30B9"
     };
     const ctxLabel = d.data.name + "\uFF08" + (perspectiveLabels[currentPerspective] || "") + "\uFF09";
     renderDataSourceValues(contextSources, ctxLabel);
@@ -713,7 +721,8 @@
       policy: "施策・事業別",
       region: "地域別",
       resource: "観光資源タイプ別",
-      traveler: "旅行者属性別"
+      traveler: "旅行者属性別",
+      usecase: "ユースケースプロセス別"
     };
 
     let html = `<span class="breadcrumb-item${currentPath.length === 0 ? " current" : ""}" onclick="resetView()">観光振興</span>`;

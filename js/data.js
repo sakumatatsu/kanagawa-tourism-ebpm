@@ -597,6 +597,271 @@ const KANAGAWA_TOURISM_DATA = {
     ]
   },
 
+  // === 切り口E: ユースケースプロセス別 ===
+  byUseCase: {
+    id: "usecase",
+    label: "ユースケースプロセス別",
+    description: "観光客のジャーニー（集客→滞在→回遊→消費）に基づくプロセス分解",
+    children: [
+      {
+        id: "attraction",
+        label: "集客（認知・来訪誘引）",
+        value: 30,
+        description: "観光客がどのように神奈川を認知し、訪問を決定するか",
+        children: [
+          {
+            id: "awareness",
+            label: "認知・情報発信",
+            value: 12,
+            description: "SNS・Web・メディアを通じた認知形成、デジタルマーケティング",
+            kpis: [
+              {
+                name: "海外向けSNSフォロワー数",
+                baseline: { value: 218789, year: 2022 },
+                target: { value: 295000, year: 2027 },
+                targets: { 2024: 242000, 2025: 258000, 2026: 276000, 2027: 295000 }
+              }
+            ],
+            dataSources: [
+              { name: "Google Trends", provider: "Google", type: "private-free", frequency: "リアルタイム", format: "CSV", note: "「神奈川 観光」「箱根」等の検索トレンド" },
+              { name: "SNS分析（Instagram/X）", provider: "各種", type: "private", frequency: "リアルタイム", format: "API", note: "ハッシュタグ投稿数・エンゲージメント" },
+              { name: "NAVITIME検索データ", provider: "ナビタイムジャパン", type: "private", frequency: "月次", format: "API", note: "観光スポット検索トレンド" },
+              { name: "JNTO訪日外客統計", provider: "日本政府観光局", type: "public", frequency: "月次", format: "CSV", note: "国籍別訪日外国人数" },
+              { name: "TripAdvisor口コミ評価", provider: "Tripadvisor", type: "private", frequency: "リアルタイム", format: "API", note: "観光地の認知度・評判" }
+            ]
+          },
+          {
+            id: "transport-access",
+            label: "交通アクセス",
+            value: 10,
+            description: "鉄道・バス・空港アクセス・クルーズ船による来訪手段",
+            kpis: [
+              {
+                name: "延べ入込観光客数",
+                baseline: { value: 19109, year: 2022 },
+                target: { value: null, year: 2027 },
+                note: "交通アクセスが入込数を左右"
+              }
+            ],
+            dataSources: [
+              { name: "JR東日本 各駅乗車人員", provider: "JR東日本", type: "private-free", frequency: "年次", format: "Web", note: "横浜駅・鎌倉駅・小田原駅等" },
+              { name: "小田急電鉄 駅別乗降人員", provider: "小田急電鉄", type: "private-free", frequency: "年次", format: "Web", note: "箱根湯本駅・小田原駅等" },
+              { name: "京急電鉄 駅別乗降人員", provider: "京浜急行電鉄", type: "private-free", frequency: "年次", format: "Web", note: "三崎口駅・横須賀中央駅" },
+              { name: "鉄道輸送統計調査", provider: "国土交通省", type: "public", frequency: "月次", format: "CSV", estatId: "00600350" },
+              { name: "港湾統計", provider: "国土交通省", type: "public", frequency: "月次", format: "CSV", estatId: "00600060", note: "横浜港クルーズ船寄港" },
+              { name: "出入国管理統計", provider: "法務省", type: "public", frequency: "月次", format: "CSV", estatId: "00250010", note: "横浜港外国人入港者" }
+            ]
+          },
+          {
+            id: "booking-planning",
+            label: "予約・旅行計画",
+            value: 8,
+            description: "OTA・旅行会社・直接予約を通じた旅行計画と予約",
+            kpis: [],
+            dataSources: [
+              { name: "楽天トラベル施設データ", provider: "楽天", type: "private", frequency: "リアルタイム", format: "API", note: "宿泊施設検索・予約データ" },
+              { name: "じゃらん宿泊旅行調査", provider: "リクルート", type: "private-free", frequency: "年次", format: "PDF", note: "宿泊旅行調査・旅行意向" },
+              { name: "JTB総合研究所", provider: "JTB", type: "private-free", frequency: "年次", format: "PDF", note: "旅行市場動向レポート" },
+              { name: "RESAS観光マップ", provider: "内閣府", type: "public", frequency: "年次", format: "API", note: "来訪者のFrom-to分析" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "stay",
+        label: "滞在（宿泊体験）",
+        value: 25,
+        description: "宿泊施設での体験、滞在中の満足度向上",
+        children: [
+          {
+            id: "accommodation",
+            label: "宿泊施設",
+            value: 12,
+            description: "ホテル・旅館・民泊等の宿泊サービス提供",
+            kpis: [
+              {
+                name: "延べ宿泊者数",
+                baseline: { value: 2209, year: 2022 },
+                target: { value: 2530, year: 2027 },
+                targets: { 2024: 2430, 2025: 2462, 2026: 2495, 2027: 2530 }
+              }
+            ],
+            dataSources: [
+              { name: "宿泊旅行統計調査", provider: "観光庁", type: "public", frequency: "月次", format: "CSV", estatId: "00604010", note: "延べ宿泊者数・客室稼働率・外国人宿泊者数" },
+              { name: "経済センサス-活動調査", provider: "総務省・経済産業省", type: "public", frequency: "5年", format: "CSV", estatId: "00200553", note: "宿泊業事業所数・従業者数" },
+              { name: "建築着工統計調査", provider: "国土交通省", type: "public", frequency: "月次", format: "CSV", estatId: "00600120", note: "宿泊施設の新規建設動向" },
+              { name: "楽天トラベル施設データ", provider: "楽天", type: "private", frequency: "リアルタイム", format: "API", note: "宿泊施設情報・口コミ" },
+              { name: "Airbnb物件データ", provider: "Inside Airbnb", type: "private-free", frequency: "四半期", format: "CSV", note: "民泊市場の規模" }
+            ]
+          },
+          {
+            id: "checkin-experience",
+            label: "チェックイン体験",
+            value: 5,
+            description: "多言語対応、DX化（セルフチェックイン等）、受入環境",
+            kpis: [
+              {
+                name: "観光客満足度",
+                baseline: { value: 77.6, year: 2022 },
+                target: { value: 80, year: 2027 },
+                note: "チェックイン体験は満足度に寄与"
+              }
+            ],
+            dataSources: [
+              { name: "神奈川県観光客実態調査", provider: "神奈川県", type: "public", frequency: "年次", format: "PDF", note: "外国人受入環境の満足度" },
+              { name: "Google Maps レビュー", provider: "Google", type: "private", frequency: "リアルタイム", format: "API", note: "宿泊施設の評価データ" }
+            ]
+          },
+          {
+            id: "instay-experience",
+            label: "滞在中の体験",
+            value: 8,
+            description: "温泉・アクティビティ・食事など滞在中の体験価値向上",
+            kpis: [
+              {
+                name: "観光客満足度",
+                baseline: { value: 77.6, year: 2022 },
+                target: { value: 80, year: 2027 },
+                note: "滞在中体験は満足度の中核"
+              }
+            ],
+            dataSources: [
+              { name: "じゃらん宿泊旅行調査", provider: "リクルート", type: "private-free", frequency: "年次", format: "PDF", note: "温泉地満足度ランキング等" },
+              { name: "TripAdvisor口コミ評価", provider: "Tripadvisor", type: "private", frequency: "リアルタイム", format: "API", note: "体験の口コミ評価" },
+              { name: "消費者物価指数", provider: "総務省", type: "public", frequency: "月次", format: "CSV", estatId: "00200573", note: "宿泊料の物価動向" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "circulation",
+        label: "回遊（域内周遊）",
+        value: 20,
+        description: "エリア内での移動・複数スポット巡り・体験活動",
+        children: [
+          {
+            id: "intra-transport",
+            label: "域内交通",
+            value: 7,
+            description: "ローカルバス・レンタサイクル・徒歩ルート・二次交通",
+            kpis: [],
+            dataSources: [
+              { name: "江ノ島電鉄 乗降人員", provider: "江ノ電", type: "private-free", frequency: "年次", format: "Web", note: "鎌倉〜藤沢の回遊指標" },
+              { name: "箱根登山鉄道 輸送実績", provider: "箱根登山鉄道", type: "private-free", frequency: "年次", format: "Web", note: "箱根エリア内回遊の直接指標" },
+              { name: "モバイル空間統計", provider: "ドコモ・インサイトマーケティング", type: "private", frequency: "月次", format: "API", note: "域内移動パターン分析" },
+              { name: "Agoop人流データ", provider: "Agoop", type: "private", frequency: "日次〜月次", format: "API", note: "GPS軌跡から回遊行動を把握" },
+              { name: "NAVITIME観光データ", provider: "ナビタイムジャパン", type: "private", frequency: "月次", format: "API", note: "周遊経路の検索データ" }
+            ]
+          },
+          {
+            id: "spot-hopping",
+            label: "観光スポット巡り",
+            value: 8,
+            description: "寺社仏閣・自然景勝地・美術館等の複数スポット訪問",
+            kpis: [
+              {
+                name: "観光客満足度",
+                baseline: { value: 77.6, year: 2022 },
+                target: { value: 80, year: 2027 },
+                note: "回遊の充実は満足度に直結"
+              }
+            ],
+            dataSources: [
+              { name: "神奈川県入込観光客調査", provider: "神奈川県", type: "public", frequency: "年次", format: "Excel/PDF", note: "スポット別入込数" },
+              { name: "社会教育調査（博物館・美術館）", provider: "文部科学省", type: "public", frequency: "3年", format: "CSV", estatId: "00400001", note: "文化施設の利用者数" },
+              { name: "宗教統計調査", provider: "文化庁", type: "public", frequency: "年次", format: "CSV", estatId: "00400401", note: "神社仏閣数（鎌倉等）" },
+              { name: "Google Maps レビュー", provider: "Google", type: "private", frequency: "リアルタイム", format: "API", note: "スポット別評価・訪問数" }
+            ]
+          },
+          {
+            id: "events-experiences",
+            label: "イベント・体験",
+            value: 5,
+            description: "祭り・ワークショップ・季節イベントへの参加",
+            kpis: [
+              {
+                name: "文化芸術の鑑賞・参加率",
+                baseline: { value: 39.8, year: 2022 },
+                target: { value: 50.0, year: 2027 }
+              }
+            ],
+            dataSources: [
+              { name: "社会生活基本調査", provider: "総務省", type: "public", frequency: "5年", format: "CSV", estatId: "00200533", note: "余暇活動の行動者率" },
+              { name: "かながわDMOデータ（36種類）", provider: "神奈川県観光協会", type: "public", frequency: "随時", note: "イベント情報・参加者数" }
+            ]
+          }
+        ]
+      },
+      {
+        id: "spending",
+        label: "消費（観光消費）",
+        value: 25,
+        description: "飲食・買い物・レジャー・デジタル決済など消費行動",
+        children: [
+          {
+            id: "food-beverage",
+            label: "飲食",
+            value: 8,
+            description: "レストラン・地元グルメ（中華街、三崎マグロ、湘南しらす等）",
+            kpis: [
+              {
+                name: "観光消費額総額",
+                baseline: { value: 10278, year: 2022 },
+                target: { value: 11896, year: 2027 },
+                note: "飲食は消費額の約23%を占める"
+              }
+            ],
+            dataSources: [
+              { name: "旅行・観光消費動向調査", provider: "観光庁", type: "public", frequency: "四半期", format: "CSV", estatId: "00604020", note: "費目別消費額" },
+              { name: "経済センサス-活動調査", provider: "総務省・経済産業省", type: "public", frequency: "5年", format: "CSV", estatId: "00200553", note: "飲食サービス業の事業所数" },
+              { name: "JCB消費NOW", provider: "JCB/ナウキャスト", type: "private-free", frequency: "月次", format: "Web", note: "飲食業の地域別消費動向" }
+            ]
+          },
+          {
+            id: "shopping-souvenirs",
+            label: "物販・お土産",
+            value: 7,
+            description: "地場産品・伝統工芸品（箱根寄木細工等）・お土産品",
+            kpis: [
+              {
+                name: "観光消費額総額",
+                baseline: { value: 10278, year: 2022 },
+                target: { value: 11896, year: 2027 },
+                note: "買物代は消費額の約30%を占める"
+              }
+            ],
+            dataSources: [
+              { name: "訪日外国人消費動向調査", provider: "観光庁", type: "public", frequency: "四半期", format: "CSV", estatId: "00604030", note: "費目別・国籍別買物代" },
+              { name: "三井住友 Custella", provider: "三井住友カード", type: "private", frequency: "月次", format: "API", note: "決済データによる購買行動分析" },
+              { name: "家計調査（旅行関連支出）", provider: "総務省", type: "public", frequency: "月次", format: "CSV", estatId: "00200561", note: "土産品購入支出" }
+            ]
+          },
+          {
+            id: "leisure-entertainment",
+            label: "レジャー・エンタメ",
+            value: 6,
+            description: "テーマパーク・水族館・スポーツ・アクティビティへの支出",
+            kpis: [],
+            dataSources: [
+              { name: "社会生活基本調査", provider: "総務省", type: "public", frequency: "5年", format: "CSV", estatId: "00200533", note: "レジャー活動行動者率" }
+            ]
+          },
+          {
+            id: "digital-spending",
+            label: "デジタル消費",
+            value: 4,
+            description: "電子チケット・キャッシュレス決済・オンライン予約支払い",
+            kpis: [],
+            dataSources: [
+              { name: "Visa消費動向データ", provider: "Visa", type: "private", frequency: "四半期", format: "レポート", note: "インバウンドのキャッシュレス消費分析" },
+              { name: "JCB消費NOW", provider: "JCB/ナウキャスト", type: "private-free", frequency: "月次", format: "Web", note: "決済手段別消費指数" }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+
   // === 全データソース一覧（カテゴリ分類） ===
   allDataSources: {
     categories: [
@@ -776,6 +1041,36 @@ const KANAGAWA_TOURISM_DATA = {
       },
       "観光消費額総額": { available: false },
       "観光客満足度": { available: false }
+    },
+    usecase: {
+      "延べ入込観光客数": {
+        available: true,
+        field: "value",
+        unit: "",
+        type: "relative",
+        label: "プロセス別の構成比（集客フェーズが主に担当）"
+      },
+      "延べ宿泊者数": {
+        available: true,
+        field: "value",
+        unit: "",
+        type: "relative",
+        label: "プロセス別の構成比（滞在フェーズが主に担当）"
+      },
+      "観光消費額総額": {
+        available: true,
+        field: "value",
+        unit: "",
+        type: "relative",
+        label: "プロセス別の構成比（消費フェーズが主に担当）"
+      },
+      "観光客満足度": {
+        available: true,
+        field: "value",
+        unit: "",
+        type: "relative",
+        label: "全プロセスが満足度に寄与"
+      }
     }
   }
 };
